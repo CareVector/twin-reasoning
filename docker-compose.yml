@@ -7,6 +7,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    networks:
+      - dokploy-network
     ports:
       - "8000:8000"
     volumes:
@@ -23,5 +25,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    networks:
+      - dokploy-network
     restart: unless-stopped
-
+    
+networks:
+  dokploy-network:
+    external: true
