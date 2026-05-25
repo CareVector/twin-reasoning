@@ -4,7 +4,7 @@
 // All API modules import from here — change one line to switch environments.
 // ─────────────────────────────────────────────────────────────────
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://twinreasoning-backend.cosmologictech.com.ng";
 
 // Debug: print API base so you can verify the frontend is using the expected backend URL
 try {
