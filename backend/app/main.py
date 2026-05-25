@@ -16,7 +16,7 @@ from app.routes import personas, reviews, chat, twins, metrics
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("[startup] Pre-loading data caches...")
-    load_user_profiles()
+    #load_user_profiles()
     #load_item_profiles()
     print("[startup] Ready.")
     yield
