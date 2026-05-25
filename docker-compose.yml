@@ -8,7 +8,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     networks:
-      - dokploy-network
+      - default
     ports:
       - "8000:8000"
     volumes:
@@ -20,57 +20,13 @@ services:
       - USE_LOCAL_LLM=${USE_LOCAL_LLM:-false}
       - DATASET_PATH=data/All_Beauty.jsonl
     restart: unless-stopped
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
-      
-      # HTTP router (redirects to HTTPS)
-      - "traefik.http.routers.backend-http.rule=Host(`twinreasoning-backend.cosmologictech.com.ng`)"
-      - "traefik.http.routers.backend-http.entrypoints=web"
-      - "traefik.http.routers.backend-http.service=backend-svc"
-      - "traefik.http.routers.backend-http.middlewares=redirect-to-https@file"
-      
-      # HTTPS router
-      - "traefik.http.routers.backend-https.rule=Host(`twinreasoning-backend.cosmologictech.com.ng`)"
-      - "traefik.http.routers.backend-https.entrypoints=websecure"
-      - "traefik.http.routers.backend-https.service=backend-svc"
-      - "traefik.http.routers.backend-https.tls=true"
-      - "traefik.http.routers.backend-https.tls.certresolver=letsencrypt"
-      
-      # Service definition (port 8000 inside container)
-      - "traefik.http.services.backend-svc.loadbalancer.server.port=8000"
 
-    
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     networks:
-      - dokploy-network
+      - default
     ports:
       - "8080:80"
     restart: unless-stopped
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=dokploy-network"
-      
-      # HTTP router (redirects to HTTPS via middleware)
-      - "traefik.http.routers.frontend-http.rule=Host(`twinreasoning.cosmologictech.com.ng`)"
-      - "traefik.http.routers.frontend-http.entrypoints=web"
-      - "traefik.http.routers.frontend-http.service=frontend-svc"
-      - "traefik.http.routers.frontend-http.middlewares=redirect-to-https@file"
-      
-      # HTTPS router (with TLS)
-      - "traefik.http.routers.frontend-https.rule=Host(`twinreasoning.cosmologictech.com.ng`)"
-      - "traefik.http.routers.frontend-https.entrypoints=websecure"
-      - "traefik.http.routers.frontend-https.service=frontend-svc"
-      - "traefik.http.routers.frontend-https.tls=true"
-      - "traefik.http.routers.frontend-https.tls.certresolver=letsencrypt"
-      
-      # Service definition (port 80 inside container)
-      - "traefik.http.services.frontend-svc.loadbalancer.server.port=80"
-    
-networks:
-  dokploy-network:
-    external: true
