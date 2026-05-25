@@ -28,6 +28,26 @@ services:
     networks:
       - dokploy-network
     restart: unless-stopped
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      
+      # HTTP router (redirects to HTTPS via middleware)
+      - "traefik.http.routers.frontend-http.rule=Host(`twinreasoning.cosmologictech.com.ng`)"
+      - "traefik.http.routers.frontend-http.entrypoints=web"
+      - "traefik.http.routers.frontend-http.service=frontend-svc"
+      - "traefik.http.routers.frontend-http.middlewares=redirect-to-https@file"
+      
+      # HTTPS router (with TLS)
+      - "traefik.http.routers.frontend-https.rule=Host(`twinreasoning.cosmologictech.com.ng`)"
+      - "traefik.http.routers.frontend-https.entrypoints=websecure"
+      - "traefik.http.routers.frontend-https.service=frontend-svc"
+      - "traefik.http.routers.frontend-https.tls=true"
+      - "traefik.http.routers.frontend-https.tls.certresolver=letsencrypt"
+      
+      # Service definition (port 80 inside container)
+      - "traefik.http.services.frontend-svc.loadbalancer.server.port=80"
     
 networks:
   dokploy-network:
