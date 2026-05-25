@@ -27,6 +27,8 @@ services:
       dockerfile: Dockerfile
     networks:
       - dokploy-network
+    ports:
+      - "8080:80"
     restart: unless-stopped
 
     labels:
