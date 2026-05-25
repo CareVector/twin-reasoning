@@ -2,25 +2,45 @@ version: "3.9"
 
 services:
   backend:
-    mem_limit: 2G
-    mem_reservation: 1G
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    networks:
-      - dokploy-network
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend/data:/app/data      # mount exported Kaggle data
-    environment:
-      - LLM_PROVIDER=${LLM_PROVIDER:-openrouter}
-      - LLM_API_KEY=${LLM_API_KEY}
-      - LLM_MODEL=${LLM_MODEL:-mistralai/Mistral-7B-Instruct-v0.1}
-      - USE_LOCAL_LLM=${USE_LOCAL_LLM:-false}
-      - DATASET_PATH=data/All_Beauty.jsonl
-    restart: unless-stopped
+  mem_limit: 2G
+  mem_reservation: 1G
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  networks:
+    - dokploy-network
+  ports:
+    - "8000:8000"
+  volumes:
+    - ./backend/data:/app/data
+  environment:
+    - LLM_PROVIDER=${LLM_PROVIDER:-openrouter}
+    - LLM_API_KEY=${LLM_API_KEY}
+    - LLM_MODEL=${LLM_MODEL:-mistralai/Mistral-7B-Instruct-v0.1}
+    - USE_LOCAL_LLM=${USE_LOCAL_LLM:-false}
+    - DATASET_PATH=data/All_Beauty.jsonl
+  restart: unless-stopped
+  labels:
+    - "traefik.enable=true"
+    - "traefik.docker.network=dokploy-network"
+    
+    # HTTP router (redirects to HTTPS)
+    - "traefik.http.routers.backend-http.rule=Host(`twinreasoning-backend.cosmologictech.com.ng)"
+    - "traefik.http.routers.backend-http.entrypoints=web"
+    - "traefik.http.routers.backend-http.service=backend-svc"
+    - "traefik.http.routers.backend-http.middlewares=redirect-to-https@file"
+    
+    # HTTPS router
+    - "traefik.http.routers.backend-https.rule=Host(`twinreasoning-backend.cosmologictech.com.ng`)"
+    - "traefik.http.routers.backend-https.entrypoints=websecure"
+    - "traefik.http.routers.backend-https.service=backend-svc"
+    - "traefik.http.routers.backend-https.tls=true"
+    - "traefik.http.routers.backend-https.tls.certresolver=letsencrypt"
+    
+    # Service definition (port 8000 inside container)
+    - "traefik.http.services.backend-svc.loadbalancer.server.port=8000"
 
+    
   frontend:
     build:
       context: ./frontend
